@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <cstdlib>
+#include <cstdint>
 
 namespace SwirlCraft
 {
@@ -8,7 +9,7 @@ namespace SwirlCraft
     struct DomainDim
     {
         size_t n;
-        size_t stride;
+        int32_t stride;
         T dx;
     };
 
@@ -20,13 +21,13 @@ namespace SwirlCraft
     };
 
     template <typename T, size_t Dims>
-    void cartesianIndex(size_t (&I)[Dims], const size_t i, const Domain<T, Dims>& domain)
+    void cartesianIndex(int32_t (&I)[Dims], const size_t i, const Domain<T, Dims>& domain)
     {
         auto p = i;
         for (size_t j = 0; j < Dims; j++)
         {
             auto k = (Dims - 1) - j;
-            auto d = std::div(p, static_cast<int>(domain.dims[k].stride));
+            auto d = std::div(p, domain.dims[k].stride);
             I[k] = d.quot;
             p = d.rem;
         }
