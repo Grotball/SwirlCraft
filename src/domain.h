@@ -32,4 +32,16 @@ namespace SwirlCraft
             p = d.rem;
         }
     }
+
+
+    template <typename Int_T, typename T, size_t Dims>
+    size_t linearIndex(Int_T (&I)[Dims], const Domain<T, Dims>& domain)
+    {
+        size_t index = 0;
+        for (size_t j = 0; j < Dims; j++)
+        {
+            index += I[j] * domain.dims[j].stride;
+        }
+        return index;
+    }
 }
