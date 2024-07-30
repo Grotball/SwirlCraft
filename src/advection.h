@@ -7,6 +7,12 @@ namespace SwirlCraft
 {
     namespace AdvecUtil
     {
+        template <typename T>
+        T lerp(const T a, const T b, const T bias)
+        {
+            return (1 - bias) * a + bias * b;
+        }
+        
         template <typename T, size_t Dims>
         T domainNearestInterpolate(T* f, const T (&x)[Dims], const Domain<T, Dims>& domain)
         {
