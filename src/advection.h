@@ -27,7 +27,7 @@ namespace SwirlCraft
     }
     
     template <typename T, size_t Dims>
-    void advectScalarField(T* f, const T* vel[Dims], const Domain<T, Dims>& domain, const T dt)
+    void advectScalarField(T* f, const T* (&vel)[Dims], const Domain<T, Dims>& domain, const T dt)
     {
         T* f_old = new T[domain.N];
         std::memcpy(f_old, f, domain.N * sizeof(T));
