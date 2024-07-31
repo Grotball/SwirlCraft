@@ -134,7 +134,7 @@ namespace SwirlCraft
     }
 
     template <typename T, size_t Dims>
-    void advectVectorField(T* F[Dims], const T* vel[Dims], const Domain<T, Dims>& domain)
+    void advectVectorField(T* F[Dims], const T* (&vel)[Dims], const Domain<T, Dims>& domain)
     {
         for (size_t i = 0; i < Dims; i++)
         {
