@@ -5,7 +5,7 @@
 
 namespace SwirlCraft
 {
-    namespace AdvecUtil
+    namespace AdvectUtil
     {
         template <typename T>
         T lerp(const T a, const T b, const T bias)
@@ -79,7 +79,7 @@ namespace SwirlCraft
 
             if (inDomain)
             {
-                f[I] = AdvecUtil::domainNearestInterpolate(f_old, u, domain);
+                f[I] = AdvectUtil::domainNearestInterpolate(f_old, u, domain);
             }
 
         }
