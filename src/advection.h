@@ -53,6 +53,36 @@ namespace SwirlCraft
             
             return lerp(b1, b2, s);
         }
+
+        template <typename T>
+        T domainTrilinearInterpolate(T* f, const T(&x)[3UL], const Domain<T, 3UL>& domain)
+        {
+            int32_t I0[3];
+            T u[3];
+            for (int i = 0; i < 3; i++)
+            {
+                I0[i] = static_cast<int32_t>(std::floor(x[i]));
+                u[i] = x[i] - I0[i];
+            }
+
+            auto index0 = linearIndex(I0, domain);
+            
+            T A[2][2];
+
+            for (auto i = 0; i < 2; i++)
+            {
+                for (auto j = 0; j < 2; j++)
+                {
+                    auto k = index0 + i * domain.dims[0].stride + j * domain.dims[1].stride;
+                    A[i][j] = lerp(f[k], f[k+domain.dims[2].stride], u[2]);
+                }
+            }
+
+            T b1 = lerp(A[0][0], A[0][1], u[1]);
+            T b2 = lerp(A[1][0], A[1][1], u[1]);
+            
+            return lerp(b1, b2, u[0]);
+        }
     }
     
     template <typename T, size_t Dims>
