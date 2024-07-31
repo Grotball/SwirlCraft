@@ -83,6 +83,22 @@ namespace SwirlCraft
             
             return lerp(b1, b2, u[0]);
         }
+
+        // Currently linear interpolation can only be done in 2 and 3 dimensions.
+        // Nearest interpolation is used as fallback when Dims is not 2 or 3.
+        template <typename T, size_t Dims>
+        T domainInterpolate(T* f, const T (&x)[Dims], const Domain<T, Dims>& domain)
+        {
+            if constexpr (Dims == 2)
+            {
+                return domainBilinearInterpolate(f, x, domain);
+            }
+            else if constexpr (Dims == 3)
+            {
+                return domainTrilinerInterpolate(f, x, domain);
+            }
+            return domainNearestInterpolate(f, x, domain);
+        }
     }
     
     template <typename T, size_t Dims>
@@ -109,7 +125,7 @@ namespace SwirlCraft
 
             if (inDomain)
             {
-                f[I] = AdvectUtil::domainNearestInterpolate(f_old, u, domain);
+                f[I] = AdvectUtil::domainInterpolate(f_old, u, domain);
             }
 
         }
