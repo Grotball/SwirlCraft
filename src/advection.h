@@ -139,7 +139,7 @@ namespace SwirlCraft
 
                 if (inDomain)
                 {
-                    f[I] = AdvectUtil::domainInterpolate(f_old, u, collision, domain);
+                    f[i] = AdvectUtil::domainInterpolate(f_old, u, collision, domain);
                 }
             }
 
