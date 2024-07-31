@@ -20,15 +20,15 @@ namespace SwirlCraft
         DomainDim<T> dims[Dims];
     };
 
-    template <typename T, size_t Dims>
-    void cartesianIndex(int32_t (&I)[Dims], const size_t i, const Domain<T, Dims>& domain)
+    template <typename Int_T, typename T, size_t Dims>
+    void cartesianIndex(Int_T (&I)[Dims], const size_t i, const Domain<T, Dims>& domain)
     {
         auto p = i;
         for (size_t j = 0; j < Dims; j++)
         {
             auto k = (Dims - 1) - j;
-            auto d = std::div(p, domain.dims[k].stride);
-            I[k] = d.quot;
+            auto d = std::div(p, static_cast<int64_t>(domain.dims[k].stride));
+            I[k] = static_cast<Int_T>(d.quot);
             p = d.rem;
         }
     }
