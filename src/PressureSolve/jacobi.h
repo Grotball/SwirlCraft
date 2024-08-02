@@ -10,20 +10,22 @@ namespace SwirlCraft
         T dxn2[Dims];
         T c[Dims];
         T sum = 0;
-
         for (size_t i = 0; i < Dims; i++)
         {
             const T dx = domain.dims[i].dx;
             dxn2[i] = 1 / (dx*dx);
             sum += dxn2[i];
         }
+
         const T c0 = static_cast<T>(0.5) / sum;
         for (size_t i = 0; i < Dims; i++)
         {
             c[i] = c0 * dxn2[i];
         }
 
+
         T* p_old = new T[domain.N];
+
 
         for (int32_t iter = 0; iter < maxIterations; iter++)
         {
@@ -31,6 +33,8 @@ namespace SwirlCraft
             {
                 p_old[i] = p[i];
             }
+
+
             for (size_t i = 0; i < domain.N; i++)
             {
                 if (collision[i] > 0)
@@ -46,8 +50,8 @@ namespace SwirlCraft
                     p[i] = A - c0 * div[i];
                 }
             }
-
         }
+        
         delete[] p_old;
     }    
 }
