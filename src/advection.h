@@ -1,7 +1,7 @@
 #pragma once
 #include <cstring>
 #include <cmath>
-#include "domain.h"
+#include "grid.h"
 
 namespace SwirlCraft
 {
@@ -13,25 +13,25 @@ namespace SwirlCraft
             return (1 - bias) * a + bias * b;
         }
         
-        template <typename T, size_t Dims>
-        T domainNearestInterpolate(T* f, const T (&x)[Dims], const T* collision, const Domain<T, Dims>& domain)
+        template <typename T, uint32_t Dims>
+        T domainNearestInterpolate(T* f, const T (&x)[Dims], const T* collision, const Grid<T, Dims>& grid)
         {
             int32_t I[Dims];
-            for (size_t i = 0; i < Dims; i++)
+            for (uint32_t i = 0; i < Dims; i++)
             {
                 I[i] = static_cast<int32_t>(std::round(x[i]));
             }
-            const auto index = linearIndex(I, domain);
+            const auto index = linearIndex(I, grid);
             return collision[index] > 0 ? f[index] : 0;
         }
         
         template <typename T>
-        T domainBilinearInterpolate(T* f, const T(&x)[2UL], const T* collision, const Domain<T, 2UL>& domain)
+        T domainBilinearInterpolate(T* f, const T(&x)[2U], const T* collision, const Grid<T, 2U>& grid)
         {
             int32_t ci = static_cast<int32_t>(std::round(x[0]));
             int32_t cj = static_cast<int32_t>(std::round(x[1]));
 
-            if (collision[ci * domain.dims[0].stride + cj * domain.dims[1].stride] <= 0)
+            if (collision[ci * grid.stride[0] + cj * grid.stride[1]] <= 0)
             {
                 return static_cast<T>(0);
             }
@@ -40,10 +40,10 @@ namespace SwirlCraft
             int32_t i2 = static_cast<int32_t>(std::ceil(x[0]));
             int32_t j1 = static_cast<int32_t>(std::floor(x[1]));
             int32_t j2 = static_cast<int32_t>(std::ceil(x[1]));
-            auto index11 = i1 * domain.dims[0].stride + j1 * domain.dims[1].stride;
-            auto index12 = i1 * domain.dims[0].stride + j2 * domain.dims[1].stride;
-            auto index21 = i2 * domain.dims[0].stride + j1 * domain.dims[1].stride;
-            auto index22 = i2 * domain.dims[0].stride + j2 * domain.dims[1].stride;
+            auto index11 = i1 * grid.stride[0] + j1 * grid.stride[1];
+            auto index12 = i1 * grid.stride[0] + j2 * grid.stride[1];
+            auto index21 = i2 * grid.stride[0] + j1 * grid.stride[1];
+            auto index22 = i2 * grid.stride[0] + j2 * grid.stride[1];
 
             auto a11 = f[index11];
             auto a12 = f[index12];
@@ -60,7 +60,7 @@ namespace SwirlCraft
         }
 
         template <typename T>
-        T domainTrilinearInterpolate(T* f, const T(&x)[3UL], const T* collision, const Domain<T, 3UL>& domain)
+        T domainTrilinearInterpolate(T* f, const T(&x)[3U], const T* collision, const Grid<T, 3U>& grid)
         {
             int32_t I0[3];
             T u[3];
@@ -72,12 +72,12 @@ namespace SwirlCraft
                 u[i] = x[i] - I0[i];
             }
 
-            if (collision[linearIndex(c, domain)] <= 0)
+            if (collision[linearIndex(c, grid)] <= 0)
             {
                 return static_cast<T>(0);
             }
 
-            auto index0 = linearIndex(I0, domain);
+            auto index0 = linearIndex(I0, grid);
             
             T A[2][2];
 
@@ -85,8 +85,8 @@ namespace SwirlCraft
             {
                 for (auto j = 0; j < 2; j++)
                 {
-                    auto k = index0 + i * domain.dims[0].stride + j * domain.dims[1].stride;
-                    A[i][j] = lerp(f[k], f[k+domain.dims[2].stride], u[2]);
+                    auto k = index0 + i * grid.stride[0] + j * grid.stride[1];
+                    A[i][j] = lerp(f[k], f[k+grid.stride[2]], u[2]);
                 }
             }
 
@@ -98,39 +98,39 @@ namespace SwirlCraft
 
         // Currently linear interpolation can only be done in 2 and 3 dimensions.
         // Nearest interpolation is used as fallback when Dims is not 2 or 3.
-        template <typename T, size_t Dims>
-        T domainInterpolate(T* f, const T (&x)[Dims], const T* collision, const Domain<T, Dims>& domain)
+        template <typename T, uint32_t Dims>
+        T domainInterpolate(T* f, const T (&x)[Dims], const T* collision, const Grid<T, Dims>& grid)
         {
             if constexpr (Dims == 2)
             {
-                return domainBilinearInterpolate(f, x, collision, domain);
+                return domainBilinearInterpolate(f, x, collision, grid);
             }
             else if constexpr (Dims == 3)
             {
-                return domainTrilinerInterpolate(f, x, collision, domain);
+                return domainTrilinerInterpolate(f, x, collision, grid);
             }
-            return domainNearestInterpolate(f, x, collision, domain);
+            return domainNearestInterpolate(f, x, collision, grid);
         }
     }
     
-    template <typename T, size_t Dims>
-    void advectScalarField(T* f, const T* (&vel)[Dims], const T* collision, const Domain<T, Dims>& domain, const T dt)
+    template <typename T, uint32_t Dims>
+    void advectScalarField(T* f, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
     {
-        T* f_old = new T[domain.N];
-        std::memcpy(f_old, f, domain.N * sizeof(T));
+        T* f_old = new T[grid.N];
+        std::memcpy(f_old, f, grid.N * sizeof(T));
 
-        for (size_t i = 0; i < domain.N; i++)
+        for (size_t i = 0; i < grid.N; i++)
         {
             if (collision[i] > 0)
             {
                 bool inDomain = true;
                 T u[Dims];
                 size_t I[Dims];
-                cartesianIndex(I, i, domain);
+                cartesianIndex(I, i, grid);
                 for (size_t j = 0; j < Dims; j++)
                 {
-                    u[j] = I[j] - vel[j][i] * dt / domain.dims[j].dx;
-                    if (u[j] < 0 || u[j] > domain.dims[j].n)
+                    u[j] = I[j] - vel[j][i] * dt / grid.dx[j];
+                    if (u[j] < 0 || u[j] > grid.size[j])
                     {
                         inDomain = false;
                         break;
@@ -139,7 +139,7 @@ namespace SwirlCraft
 
                 if (inDomain)
                 {
-                    f[i] = AdvectUtil::domainInterpolate(f_old, u, collision, domain);
+                    f[i] = AdvectUtil::domainInterpolate(f_old, u, collision, grid);
                 }
             }
 
@@ -148,12 +148,12 @@ namespace SwirlCraft
         delete[] f_old;
     }
 
-    template <typename T, size_t Dims>
-    void advectVectorField(T* (&F)[Dims], const T* (&vel)[Dims], const T* collision, const Domain<T, Dims>& domain, const T dt)
+    template <typename T, uint32_t Dims>
+    void advectVectorField(T* (&F)[Dims], const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
     {
         for (size_t i = 0; i < Dims; i++)
         {
-            advectScalarField(F[i], vel, collision, domain, dt);
+            advectScalarField(F[i], vel, collision, grid, dt);
         }
     }
 }
