@@ -7,4 +7,25 @@
 
 #ifdef __SSE4_1__
 #define SWIRL_CRAFT_USE_SIMD
+
+
 #endif
+
+
+
+namespace SwirlCraft
+{
+    namespace Arch
+    {
+        #ifdef SWIRL_CRAFT_USE_SIMD
+            #if defined(__SSE4_1__)
+            constexpr int PackedSize = 16;
+            #endif
+        #else
+            constexpr int PackedSize = 0;
+        #endif
+
+        constexpr int PackedFloats = PackedSize / sizeof(float);
+        constexpr int PackedDoubles = PackedSize / sizeof(double);
+    }
+}
