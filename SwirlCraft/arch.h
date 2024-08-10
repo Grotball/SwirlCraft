@@ -5,7 +5,7 @@
 #endif
 
 
-#ifdef __SSE4_1__
+#if __SSE4_1__
 #define SWIRL_CRAFT_USE_SIMD
 
 
@@ -18,7 +18,9 @@ namespace SwirlCraft
     namespace Arch
     {
         #ifdef SWIRL_CRAFT_USE_SIMD
-            #if defined(__SSE4_1__)
+            #if __AVX__
+            constexpr int PackedSize = 32;
+            #elif __SSE4_1__
             constexpr int PackedSize = 16;
             #endif
         #else

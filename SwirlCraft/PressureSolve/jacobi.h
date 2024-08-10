@@ -34,8 +34,11 @@ namespace SwirlCraft
     inline void jacobiIteration<float>(float* p, float* p_old, const float* div, const float* collision, const float c0, const float* c, const int64_t* strides, const uint32_t dims, const size_t N)
     {
         const size_t l = N % SwirlCraft::Arch::PackedFloats;
-
+        #if __AVX__
+        const auto c0_v = _mm256_set1_ps(c0);
+        #elif __SSE4_1__
         const auto c0_v = _mm_set1_ps(c0);
+        #endif
 
         for (size_t i = 0; i < N; i++)
         {
@@ -60,6 +63,37 @@ namespace SwirlCraft
 
         for (size_t i = l; i < N; i+=SwirlCraft::Arch::PackedFloats)
         {
+            #if __AVX__
+            __m256 A = _mm256_setzero_ps();
+            const __m256 p0 = _mm256_loadu_ps(p_old + i);
+
+            for (uint32_t j = 0; j < dims; j++)
+            {
+                const auto stride = strides[j];
+                const auto cj = _mm256_set1_ps(c[j]);
+                const auto b1 = _mm256_blendv_ps(
+                    _mm256_loadu_ps(p_old + i - stride),
+                    p0,
+                    _mm256_loadu_ps(collision + i - stride)
+                );
+                const auto b2 = _mm256_blendv_ps(
+                    _mm256_loadu_ps(p_old + i + stride), 
+                    p0, 
+                    _mm256_loadu_ps(collision + i + stride)
+                );
+
+                A = _mm256_fmadd_ps(_mm256_add_ps(b1, b2), cj, A);
+            }
+
+            _mm256_storeu_ps(
+                p + i,
+                _mm256_fnmadd_ps(
+                    c0_v, 
+                    _mm256_loadu_ps(div + i),
+                    A
+                )
+            );
+            #elif __SSE4_1__
             __m128 A = _mm_setzero_ps();
             const __m128 p0 = _mm_loadu_ps(p_old + i);
 
@@ -89,6 +123,7 @@ namespace SwirlCraft
                     A
                 )
             );
+            #endif
         }
     }
 
@@ -96,7 +131,11 @@ namespace SwirlCraft
     inline void jacobiIteration<double>(double* p, double* p_old, const double* div, const double* collision, const double c0, const double* c, const int64_t* strides, const uint32_t dims, const size_t N)
     {
         const size_t l = N % SwirlCraft::Arch::PackedDoubles;
+        #if __AVX__
+        const auto c0_v = _mm256_set1_pd(c0);
+        #elif __SSE4_1__
         const auto c0_v = _mm_set1_pd(c0);
+        #endif
         
         for (size_t i = 0; i < N; i++)
         {
@@ -121,6 +160,39 @@ namespace SwirlCraft
 
         for (size_t i = l; i < N; i+=SwirlCraft::Arch::PackedDoubles)
         {
+            #if __AVX__
+            __m256d A = _mm256_setzero_pd();
+            const __m256d p0 = _mm256_loadu_pd(p_old + i);
+
+            for (uint32_t j = 0; j < dims; j++)
+            {
+                const auto stride = strides[j];
+                const auto cj = _mm256_set1_pd(c[j]);
+                const auto b1 = _mm256_blendv_pd(
+                    _mm256_loadu_pd(p_old + i - stride),
+                    p0,
+                    _mm256_loadu_pd(collision + i - stride)
+                );
+                const auto b2 = _mm256_blendv_pd(
+                    _mm256_loadu_pd(p_old + i + stride), 
+                    p0, 
+                    _mm256_loadu_pd(collision + i + stride)
+                );
+
+                A = _mm256_fmadd_pd(_mm256_add_pd(b1, b2), cj, A);
+            }
+
+            _mm256_storeu_pd(
+                p + i,
+                _mm256_fnmadd_pd(
+                    c0_v, 
+                    _mm256_loadu_pd(div + i),
+                    A
+                )
+            );
+
+            #elif __SSE4_1__
+
             __m128d A = _mm_setzero_pd();
             const __m128d p0 = _mm_loadu_pd(p_old + i);
 
@@ -150,6 +222,7 @@ namespace SwirlCraft
                     A
                 )
             );
+            #endif
         }
     }
     #endif
