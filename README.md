@@ -17,6 +17,10 @@ Then add the created directory to the include path (or move the subfolder
 SwirlCraft to your project). And finally, add 
 `#include <SwirlCraft/swirl_craft.h>` in your project to start using Swirl Craft 🎉.
 
+## License
+
+Swirl Craft is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE) file for details.
+
 ---
 
 Swirl Craft is currently in a highly experimental stage, and has no
