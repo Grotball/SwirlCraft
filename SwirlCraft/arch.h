@@ -7,8 +7,6 @@
 
 #if __SSE4_1__
 #define SWIRL_CRAFT_USE_SIMD
-
-
 #endif
 
 
