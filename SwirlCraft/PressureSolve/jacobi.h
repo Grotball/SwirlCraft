@@ -228,7 +228,7 @@ namespace SwirlCraft
     #endif
 
     template <typename T, uint32_t Dims>
-    void jacobiSolve(T* p, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    void jacobiSolve(T* p, T* p_old, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T dxn2[Dims];
         T c[Dims];
@@ -248,7 +248,7 @@ namespace SwirlCraft
         }
 
 
-        T* p_old = new T[N];
+        
 
 
         for (int32_t iter = 0; iter < maxIterations; iter++)
@@ -256,6 +256,16 @@ namespace SwirlCraft
             jacobiIteration(p, p_old, div, collision, c0, c, grid.stride, Dims, N);
         }
         
-        delete[] p_old;
+        
     }    
+
+    template <typename T, uint32_t Dims>
+    void jacobiSolve(T* p, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    {
+        T* p_old = new T[grid.N];
+
+        jacobiSolve(p, p_old, div, collision, grid, maxIterations);
+
+        delete[] p_old;
+    }
 }
