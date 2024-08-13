@@ -5,7 +5,17 @@
 namespace SwirlCraft
 {
     template <typename T, uint32_t Dims>
-    void projectNonDivergent(T* (&vel)[Dims], T* p, T* p_old, T* div, const T* collision, const T* (&collision_vel)[Dims], const Grid<T, Dims>& grid, PressureSolveMethod solveMethod=PressureSolveMethod::JacobiMethod, const int32_t maxIterations=40)
+    void projectNonDivergent(
+        T* (&vel)[Dims], 
+        T* p, 
+        T* p_old, 
+        T* div, 
+        const T* collision, 
+        const T* (&collision_vel)[Dims], 
+        const Grid<T, Dims>& grid, 
+        PressureSolveMethod solveMethod=PressureSolveMethod::JacobiMethod, 
+        const int32_t maxIterations=40
+    )
     {
         for (size_t i = 0; i < grid.N; i++)
         {
