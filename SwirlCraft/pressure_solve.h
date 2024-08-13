@@ -3,8 +3,12 @@
 #include "PressureSolve/jacobi.h"
 #include "PressureSolve/gauss_seidel.h"
 
-enum class PressureSolveMethod
+
+namespace SwirlCraft
 {
-    JacobiMethod,
-    GaussSeidelMethod
-};
+    enum class PressureSolveMethod
+    {
+        JacobiMethod,
+        GaussSeidelMethod
+    };
+}
