@@ -4,6 +4,9 @@
 #include <immintrin.h>
 #endif
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #if __SSE4_1__
 #define SWIRL_CRAFT_USE_SIMD
