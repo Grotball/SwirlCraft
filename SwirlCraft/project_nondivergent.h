@@ -11,7 +11,7 @@ namespace SwirlCraft
         T* p_old, 
         T* div, 
         const T* collision, 
-        const T* (&collision_vel)[Dims], 
+        T* (&collision_vel)[Dims], 
         const Grid<T, Dims>& grid, 
         PressureSolveMethod solveMethod=PressureSolveMethod::JacobiMethod, 
         const int32_t maxIterations=40
