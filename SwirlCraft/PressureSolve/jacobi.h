@@ -247,16 +247,10 @@ namespace SwirlCraft
             c[i] = c0 * dxn2[i];
         }
 
-
-        
-
-
         for (int32_t iter = 0; iter < maxIterations; iter++)
         {
             jacobiIteration(p, p_old, div, collision, c0, c, grid.stride, Dims, N);
         }
-        
-        
     }    
 
     template <typename T, uint32_t Dims>
