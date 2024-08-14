@@ -68,7 +68,7 @@ namespace SwirlCraft
             }
 
             #ifdef _OPENMP
-            #pragma omp single
+            #pragma omp single nowait
             #endif
             for (size_t i = 0; i < l; i++)
             {
@@ -182,7 +182,7 @@ namespace SwirlCraft
             }
 
             #ifdef _OPENMP
-            #pragma omp single
+            #pragma omp single nowait
             #endif
             for (size_t i = 0; i < l; i++)
             {
