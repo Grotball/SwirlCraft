@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cmath>
 #include "grid.h"
+#include "arch.h"
 
 namespace SwirlCraft
 {
@@ -119,6 +120,9 @@ namespace SwirlCraft
         T* f_old = new T[grid.N];
         std::memcpy(f_old, f, grid.N * sizeof(T));
 
+        #ifdef _OPENMP
+        #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < grid.N; i++)
         {
             if (collision[i] > 0)
