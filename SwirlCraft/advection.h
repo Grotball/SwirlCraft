@@ -134,7 +134,7 @@ namespace SwirlCraft
                 for (size_t j = 0; j < Dims; j++)
                 {
                     u[j] = I[j] - vel[j][i] * dt / grid.dx[j];
-                    if (u[j] < 0 || u[j] > grid.size[j])
+                    if (u[j] < 0 || u[j] > (grid.size[j]-1))
                     {
                         inDomain = false;
                         break;
