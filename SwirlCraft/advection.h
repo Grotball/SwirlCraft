@@ -115,11 +115,13 @@ namespace SwirlCraft
     }
     
     template <typename T, uint32_t Dims>
-    void advectScalarField(T* f, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
+    void advectScalarField(T* f, T* f_old, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt, bool copy_f=true)
     {
-        T* f_old = new T[grid.N];
-        std::memcpy(f_old, f, grid.N * sizeof(T));
-
+        if (copy_f)
+        {
+            std::memcpy(f_old, f, grid.N * sizeof(T));
+        }
+        
         #ifdef _OPENMP
         #pragma omp parallel for
         #endif
@@ -148,7 +150,13 @@ namespace SwirlCraft
             }
 
         }
+    }
 
+    template <typename T, uint32_t Dims>
+    void advectScalarField(T* f, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
+    {
+        T* f_old = new T[grid.N];
+        advectScalarField(f, f_old, vel, collision, grid, dt, true);
         delete[] f_old;
     }
 
