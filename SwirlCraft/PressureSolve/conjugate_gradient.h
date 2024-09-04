@@ -76,6 +76,7 @@ namespace SwirlCraft
             for (size_t i = 0; i < grid.N; i++)
             {
                 r[i] -= alpha * v[i];
+                f[i] += alpha * p[i];
             }
 
             res2_sum = 0;
@@ -91,10 +92,6 @@ namespace SwirlCraft
                 p[i] = r[i] + beta * p[i];
             }
 
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                f[i] += alpha * p[i];
-            }
             iter++;
         }
 
