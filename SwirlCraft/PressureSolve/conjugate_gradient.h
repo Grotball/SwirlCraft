@@ -50,47 +50,50 @@ namespace SwirlCraft
         while (iter < maxIterations && tol < res2_sum)
         {
             auto res2_sum_old = res2_sum;
-
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                v[i] = 0;
-                if (collision[i] > 0)
-                {
-                    for (uint32_t j = 0; j < Dims; j++)
-                    {
-                        const auto stride = grid.stride[j];
-                        auto a1 = collision[i-stride] > 0 ? p[i-stride] : p[i];
-                        auto a2 = collision[i+stride] > 0 ? p[i+stride] : p[i];
-                        v[i] += (a1 + a2 - 2 * p[i]) * dxn2[j];
-                    }     
-                }
-            }
-
             T p_dot_v = 0;
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                p_dot_v += p[i] * v[i];
-            }
-
-            auto alpha = res2_sum_old / p_dot_v;
-            
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                r[i] -= alpha * v[i];
-                f[i] += alpha * p[i];
-            }
-
             res2_sum = 0;
-            for (size_t i = 0; i < grid.N; i++)
+            #pragma omp parallel
             {
-                res2_sum += r[i] * r[i];
-            }
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    v[i] = 0;
+                    if (collision[i] > 0)
+                    {
+                        for (uint32_t j = 0; j < Dims; j++)
+                        {
+                            const auto stride = grid.stride[j];
+                            auto a1 = collision[i-stride] > 0 ? p[i-stride] : p[i];
+                            auto a2 = collision[i+stride] > 0 ? p[i+stride] : p[i];
+                            v[i] += (a1 + a2 - 2 * p[i]) * dxn2[j];
+                        }     
+                    }
+                }
+                #pragma omp for reduction(+:p_dot_v)
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    p_dot_v += p[i] * v[i];
+                }
 
-            const T beta = res2_sum / res2_sum_old;
+                auto alpha = res2_sum_old / p_dot_v;
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    r[i] -= alpha * v[i];
+                    f[i] += alpha * p[i];
+                }
+                #pragma omp for reduction(+:res2_sum)
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    res2_sum += r[i] * r[i];
+                }
 
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                p[i] = r[i] + beta * p[i];
+                const T beta = res2_sum / res2_sum_old;
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    p[i] = r[i] + beta * p[i];
+                }
             }
 
             iter++;
@@ -243,53 +246,61 @@ namespace SwirlCraft
         int32_t iter = 0;
         while (iter < maxIterations && tol < res_sum)
         {
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                v[i] = 0;
-                if (collision[i] > 0)
-                {
-                    for (uint32_t j = 0; j < Dims; j++)
-                    {
-                        auto stride = grid.stride[j];
-                        auto a1 = collision[i - stride] > 0 ? p[i - stride] : p[i];
-                        auto a2 = collision[i + stride] > 0 ? p[i + stride] : p[i];
-                        v[i] += -(a1 + a2 - 2*p[i]) * dxn2[j];
-                    }
-                }
-            }
-
             T p_dot_v = 0;
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                p_dot_v += p[i] * v[i];
-            }
-            T alpha = r_dot_z / p_dot_v;
-
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                f[i] += alpha * p[i];
-                r[i] -= alpha * v[i];
-            }
-
-            applyPreconditioner(z, w, r, L_diag, collision, dxn2, grid);
-
             res_sum = 0;
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                res_sum += r[i] * r[i];
-            }
             auto r_dot_z_old = r_dot_z;
             r_dot_z = 0;
-            for (size_t i = 0; i < grid.N; i++)
+            #pragma omp parallel
             {
-                r_dot_z += r[i] * z[i];
-            }
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    v[i] = 0;
+                    if (collision[i] > 0)
+                    {
+                        for (uint32_t j = 0; j < Dims; j++)
+                        {
+                            auto stride = grid.stride[j];
+                            auto a1 = collision[i - stride] > 0 ? p[i - stride] : p[i];
+                            auto a2 = collision[i + stride] > 0 ? p[i + stride] : p[i];
+                            v[i] += -(a1 + a2 - 2*p[i]) * dxn2[j];
+                        }
+                    }
+                }
 
-            T beta = r_dot_z / r_dot_z_old;
+                #pragma omp for reduction(+:p_dot_v)
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    p_dot_v += p[i] * v[i];
+                }
+                T alpha = r_dot_z_old / p_dot_v;
 
-            for (size_t i = 0; i < grid.N; i++)
-            {
-                p[i] = z[i] + beta * p[i];
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    f[i] += alpha * p[i];
+                    r[i] -= alpha * v[i];
+                }
+
+                #pragma omp single
+                {
+                    applyPreconditioner(z, w, r, L_diag, collision, dxn2, grid);
+                }
+
+                #pragma omp for reduction(+:res_sum, r_dot_z)
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    res_sum += r[i] * r[i];
+                    r_dot_z += r[i] * z[i];
+                }
+
+                T beta = r_dot_z / r_dot_z_old;
+
+                #pragma omp for
+                for (size_t i = 0; i < grid.N; i++)
+                {
+                    p[i] = z[i] + beta * p[i];
+                }
             }
 
             iter++;
