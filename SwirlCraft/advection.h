@@ -135,7 +135,7 @@ namespace SwirlCraft
                 cartesianIndex(I, i, grid);
                 for (size_t j = 0; j < Dims; j++)
                 {
-                    u[j] = I[j] - vel[j][i] * dt / grid.dx[j];
+                    u[j] = static_cast<T>(I[j]) - vel[j][i] * dt / grid.dx[j];
                     if (u[j] < 0 || u[j] > (grid.size[j]-1))
                     {
                         inDomain = false;
