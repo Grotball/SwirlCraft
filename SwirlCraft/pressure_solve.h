@@ -10,6 +10,8 @@ namespace SwirlCraft
     enum class PressureSolveMethod
     {
         JacobiMethod,
-        GaussSeidelMethod
+        GaussSeidelMethod,
+        ConjugateGradientMethod,
+        PreconditionedConjugateGradientMethod
     };
 }
