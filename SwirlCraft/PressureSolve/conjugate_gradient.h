@@ -1,6 +1,7 @@
 #pragma once
 #include "../grid.h"
 #include <cmath>
+#include "../arch.h"
 
 namespace SwirlCraft
 {
@@ -50,9 +51,13 @@ namespace SwirlCraft
             auto res2_sum_old = res2_sum;
             T p_dot_v = 0;
             res2_sum = 0;
+            #ifdef _OPENMP
             #pragma omp parallel
+            #endif
             {
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     v[i] = 0;
@@ -67,27 +72,35 @@ namespace SwirlCraft
                         }     
                     }
                 }
+                #ifdef _OPENMP
                 #pragma omp for reduction(+:p_dot_v)
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     p_dot_v += p[i] * v[i];
                 }
 
                 auto alpha = res2_sum_old / p_dot_v;
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     r[i] -= alpha * v[i];
                     f[i] += alpha * p[i];
                 }
+                #ifdef _OPENMP
                 #pragma omp for reduction(+:res2_sum)
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     res2_sum += r[i] * r[i];
                 }
 
                 const T beta = res2_sum / res2_sum_old;
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     p[i] = r[i] + beta * p[i];
@@ -254,9 +267,13 @@ namespace SwirlCraft
             res_sum = 0;
             auto r_dot_z_old = r_dot_z;
             r_dot_z = 0;
+            #ifdef _OPENMP
             #pragma omp parallel
+            #endif
             {
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     v[i] = 0;
@@ -272,26 +289,34 @@ namespace SwirlCraft
                     }
                 }
 
+                #ifdef _OPENMP
                 #pragma omp for reduction(+:p_dot_v)
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     p_dot_v += p[i] * v[i];
                 }
                 T alpha = r_dot_z_old / p_dot_v;
 
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     f[i] += alpha * p[i];
                     r[i] -= alpha * v[i];
                 }
 
+                #ifdef _OPENMP
                 #pragma omp single
+                #endif
                 {
                     applyPreconditioner(z, w, r, L_diag, collision, dxn2, grid);
                 }
 
+                #ifdef _OPENMP
                 #pragma omp for reduction(+:res_sum, r_dot_z)
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     res_sum += r[i] * r[i];
@@ -300,7 +325,9 @@ namespace SwirlCraft
 
                 T beta = r_dot_z / r_dot_z_old;
 
+                #ifdef _OPENMP
                 #pragma omp for
+                #endif
                 for (size_t i = 0; i < grid.N; i++)
                 {
                     p[i] = z[i] + beta * p[i];
