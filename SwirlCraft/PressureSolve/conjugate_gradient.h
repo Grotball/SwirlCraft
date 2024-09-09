@@ -6,7 +6,7 @@ namespace SwirlCraft
 {
     
     template <typename T, uint32_t Dims>
-    void conjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    void conjugateGradientSolve(T* p, T* r, T* v, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         T dxn2[Dims];
         for (uint32_t i = 0; i < Dims; i++)
@@ -15,9 +15,7 @@ namespace SwirlCraft
             dxn2[i] = 1 / (dx*dx);
         }
 
-        T* r = new T[grid.N];
-        T* p = new T[grid.N];
-        T* v = new T[grid.N];
+        
 
         T res2_sum = 0;
         T g2_sum = 0;
@@ -99,6 +97,17 @@ namespace SwirlCraft
             iter++;
         }
 
+    }
+
+    template <typename T, uint32_t Dims>
+    void conjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    {
+        T* r = new T[grid.N];
+        T* p = new T[grid.N];
+        T* v = new T[grid.N];
+        
+        conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
+
         delete[] r;
         delete[] p;
         delete[] v;
@@ -159,7 +168,7 @@ namespace SwirlCraft
 
 
     template <typename T, uint32_t Dims>
-    void preconditionedConjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    void preconditionedConjugateGradientSolve(T* L_diag, T* p, T* r, T* v, T* w, T* z, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         
         T dxn2[Dims];
@@ -171,12 +180,7 @@ namespace SwirlCraft
             c0 += 2 * dxn2[i];
         }
 
-        T* v = new T[grid.N];
-        T* p = new T[grid.N];
-        T* r = new T[grid.N];
-        T* z = new T[grid.N];
-        T* w = new T[grid.N];
-        T* L_diag = new T[grid.N];
+
 
         for (size_t i = 0; i < grid.N; i++) {r[i] = 0;}
 
@@ -307,11 +311,25 @@ namespace SwirlCraft
         }
 
 
-        delete[] v;
-        delete[] p;
-        delete[] r;
-        delete[] z;
-        delete[] w;
+    }
+
+    template <typename T, uint32_t Dims>
+    void preconditionedConjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    {
+        T* L_diag = new T[grid.N];
+        T* r = new T[grid.N];
+        T* p = new T[grid.N];
+        T* v = new T[grid.N];
+        T* w = new T[grid.N];
+        T* z = new T[grid.N];
+
+        preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
+
         delete[] L_diag;
+        delete[] r;
+        delete[] p;
+        delete[] v;
+        delete[] w;
+        delete[] z;
     }
 }
