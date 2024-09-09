@@ -32,12 +32,21 @@ namespace SwirlCraft
             }
         }
 
+        // TODO: allow setting epsilon for CG and PCG.
         switch (solveMethod)
         {
             case PressureSolveMethod::GaussSeidelMethod:
             {
                 gaussSeidelSolve(p, div, collision, grid, maxIterations);
                 break;
+            }
+            case PressureSolveMethod::ConjugateGradientMethod:
+            {
+                conjugateGradientSolve(p, div, collision, grid, maxIterations, static_cast<T>(0.0));
+            }
+            case PressureSolveMethod::PreconditionedConjugateGradientMethod:
+            {
+                preconditionedConjugateGradientSolve(p, div, collision, grid, maxIterations, static_cast<T>(0.0));
             }
             default:
             {
