@@ -1,7 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <cstdlib>
-#include <stddef.h>
 #include "../grid.h"
 
 namespace SwirlCraft
