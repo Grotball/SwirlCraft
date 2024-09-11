@@ -15,7 +15,7 @@ namespace SwirlCraft
         public:
         void solve(T* p, const T* div, const T* collision, const int32_t maxIterations)
         {
-            static_cast<Derived<T, Dims>*>(this)->_solve_impl(p, div, collision, grid, maxIterations);
+            static_cast<Derived<T, Dims>*>(this)->_solve_impl(p, div, collision, maxIterations);
         }
         void solve(T* p, const T* div, const T* collision)
         {
