@@ -57,8 +57,7 @@ namespace SwirlCraft
         #ifdef _OPENMP
         #pragma omp parallel
         {
-        #endif    
-
+        #endif
             #ifdef _OPENMP
             #pragma omp for
             #endif
