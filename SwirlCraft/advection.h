@@ -115,7 +115,7 @@ namespace SwirlCraft
     }
     
     template <typename T, uint32_t Dims>
-    void advectScalarField(T* f, T* f_old, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt, bool copy_f=true)
+    void advectScalarField(T* f, T* f_old, T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt, bool copy_f=true)
     {
         if (copy_f)
         {
@@ -153,7 +153,7 @@ namespace SwirlCraft
     }
 
     template <typename T, uint32_t Dims>
-    void advectScalarField(T* f, const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
+    void advectScalarField(T* f, T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
     {
         T* f_old = new T[grid.N];
         advectScalarField(f, f_old, vel, collision, grid, dt, true);
@@ -161,7 +161,7 @@ namespace SwirlCraft
     }
 
     template <typename T, uint32_t Dims>
-    void advectVectorField(T* (&F)[Dims], const T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
+    void advectVectorField(T* (&F)[Dims], T* (&vel)[Dims], const T* collision, const Grid<T, Dims>& grid, const T dt)
     {
         for (size_t i = 0; i < Dims; i++)
         {
