@@ -33,11 +33,9 @@ namespace SwirlCraft
             }
             else
             {
-                
                 L_diag = nullptr;
                 w = nullptr;
                 z = nullptr;
-
             }
         }
         void _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
@@ -49,7 +47,6 @@ namespace SwirlCraft
             else
             {
                 conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
-
             }
         }
         ~ConjugateGradientSolver()
@@ -60,7 +57,6 @@ namespace SwirlCraft
 
             if (use_preconditioner)
             {
-
                 delete[] L_diag;
                 delete[] w;
                 delete[] z;
