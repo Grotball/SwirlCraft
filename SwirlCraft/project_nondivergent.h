@@ -11,7 +11,6 @@ namespace SwirlCraft
         T* p, 
         T* div, 
         const T* collision, 
-        T* (&collision_vel)[Dims], 
         const Grid<T, Dims>& grid, 
         PressureSolver& pressureSolver
     )
@@ -27,8 +26,8 @@ namespace SwirlCraft
                 for (uint32_t j = 0; j < Dims; j++)
                 {
                     const auto stride = grid.stride[j];
-                    auto b1 = collision[i - stride] > 0 ? vel[j][i - stride] : 2 * collision_vel[j][i - stride] - vel[j][i];
-                    auto b2 = collision[i + stride] > 0 ? vel[j][i + stride] : 2 * collision_vel[j][i + stride] - vel[j][i];
+                    auto b1 = collision[i - stride] > 0 ? vel[j][i - stride] : 2 * vel[j][i - stride] - vel[j][i];
+                    auto b2 = collision[i + stride] > 0 ? vel[j][i + stride] : 2 * vel[j][i + stride] - vel[j][i];
                     div[i] += (b2 - b1) * static_cast<T>(0.5) / grid.dx[j];
                 }
             }
