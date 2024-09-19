@@ -14,8 +14,7 @@ namespace SwirlCraft
     {
         JacobiMethod,
         GaussSeidelMethod,
-        ConjugateGradientMethod,
-        PreconditionedConjugateGradientMethod
+        ConjugateGradientMethod
     };
 
     template <typename T, uint32_t, PressureSolveMethod PSM>
@@ -33,11 +32,6 @@ namespace SwirlCraft
     };
     template <typename T, uint32_t Dims>
     struct PressureSolver_traits<T, Dims, PressureSolveMethod::ConjugateGradientMethod>
-    {
-        typedef ConjugateGradientSolver<T, Dims> type;
-    };
-    template <typename T, uint32_t Dims>
-    struct PressureSolver_traits<T, Dims, PressureSolveMethod::PreconditionedConjugateGradientMethod>
     {
         typedef ConjugateGradientSolver<T, Dims> type;
     };
