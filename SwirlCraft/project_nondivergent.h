@@ -18,6 +18,7 @@ namespace SwirlCraft
         // Compute divergence of velocity while preserving
         // the free-slip boundary condition 
         // dot(vel, normal_dir) = dot(vel_solid, normal_dir).
+        #pragma omp parallel for
         for (size_t i = 0; i < grid.N; i++)
         {
             if (collision[i] > 0)
@@ -39,6 +40,7 @@ namespace SwirlCraft
         for (uint32_t i = 0; i < Dims; i++)
         {
             auto stride = grid.stride[i];
+            #pragma omp parallel for
             for (size_t j = 0; j < grid.N; j++)
             {
                 if (collision[j] > 0)
