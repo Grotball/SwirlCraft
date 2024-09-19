@@ -4,17 +4,15 @@
 
 namespace SwirlCraft
 {
-    template <typename T, uint32_t Dims>
+    template <typename T, uint32_t Dims, typename PressureSolver>
     void projectNonDivergent(
         T* (&vel)[Dims], 
         T* p, 
-        T* p_old, 
         T* div, 
         const T* collision, 
         T* (&collision_vel)[Dims], 
         const Grid<T, Dims>& grid, 
-        PressureSolveMethod solveMethod=PressureSolveMethod::JacobiMethod, 
-        const int32_t maxIterations=40
+        PressureSolver& pressureSolver
     )
     {
         for (size_t i = 0; i < grid.N; i++)
@@ -32,29 +30,8 @@ namespace SwirlCraft
             }
         }
 
-        // TODO: allow setting epsilon for CG and PCG.
-        switch (solveMethod)
-        {
-            case PressureSolveMethod::GaussSeidelMethod:
-            {
-                gaussSeidelSolve(p, div, collision, grid, maxIterations);
-                break;
-            }
-            case PressureSolveMethod::ConjugateGradientMethod:
-            {
-                conjugateGradientSolve(p, div, collision, grid, maxIterations, static_cast<T>(0.0));
-            }
-            case PressureSolveMethod::PreconditionedConjugateGradientMethod:
-            {
-                preconditionedConjugateGradientSolve(p, div, collision, grid, maxIterations, static_cast<T>(0.0));
-            }
-            default:
-            {
-                jacobiSolve(p, p_old, div, collision, grid, maxIterations);
-                break;
-            }
-        }
-
+        pressureSolver.solve(p, div, collision);
+    
         for (uint32_t i = 0; i < Dims; i++)
         {
             auto stride = grid.stride[i];
