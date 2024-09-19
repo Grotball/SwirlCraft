@@ -4,6 +4,7 @@
 
 namespace SwirlCraft
 {
+    // Removes divergence from velocity field.
     template <typename T, uint32_t Dims, typename PressureSolver>
     void projectNonDivergent(
         T* (&vel)[Dims], 
@@ -15,6 +16,9 @@ namespace SwirlCraft
         PressureSolver& pressureSolver
     )
     {
+        // Compute divergence of velocity while preserving
+        // the free-slip boundary condition 
+        // dot(vel, normal_dir) = dot(vel_solid, normal_dir).
         for (size_t i = 0; i < grid.N; i++)
         {
             if (collision[i] > 0)
@@ -31,7 +35,8 @@ namespace SwirlCraft
         }
 
         pressureSolver.solve(p, div, collision);
-    
+
+        // Subtract pressure gradient from velocity to remove divergence.
         for (uint32_t i = 0; i < Dims; i++)
         {
             auto stride = grid.stride[i];
