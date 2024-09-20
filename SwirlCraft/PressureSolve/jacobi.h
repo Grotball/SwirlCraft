@@ -5,7 +5,17 @@
 namespace SwirlCraft
 {
     template <typename T>
-    inline void jacobiIteration(T* p, T* p_old, const T* div, const T* collision, const T c0, const T* c, const int64_t* strides, const uint32_t dims, const size_t N)
+    inline void jacobiIteration(
+        T* p, 
+        T* p_old, 
+        const T* div, 
+        const T* collision, 
+        const T c0, 
+        const T* c, 
+        const int64_t* strides, 
+        const uint32_t dims, 
+        const size_t N
+    )
     {
         #ifdef _OPENMP
         #pragma omp parallel
@@ -45,7 +55,17 @@ namespace SwirlCraft
 
     #ifdef SWIRL_CRAFT_USE_SIMD
     template <>
-    inline void jacobiIteration<float>(float* p, float* p_old, const float* div, const float* collision, const float c0, const float* c, const int64_t* strides, const uint32_t dims, const size_t N)
+    inline void jacobiIteration<float>(
+        float* p, 
+        float* p_old, 
+        const float* div, 
+        const float* collision, 
+        const float c0, 
+        const float* c, 
+        const int64_t* strides, 
+        const uint32_t dims, 
+        const size_t N
+    )
     {
         const size_t l = N % SwirlCraft::Arch::PackedFloats;
         #if __AVX__
@@ -158,7 +178,17 @@ namespace SwirlCraft
     }
 
     template <>
-    inline void jacobiIteration<double>(double* p, double* p_old, const double* div, const double* collision, const double c0, const double* c, const int64_t* strides, const uint32_t dims, const size_t N)
+    inline void jacobiIteration<double>(
+        double* p, 
+        double* p_old, 
+        const double* div, 
+        const double* collision, 
+        const double c0, 
+        const double* c, 
+        const int64_t* strides, 
+        const uint32_t dims, 
+        const size_t N
+    )
     {
         const size_t l = N % SwirlCraft::Arch::PackedDoubles;
         #if __AVX__
