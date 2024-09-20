@@ -13,13 +13,13 @@ namespace SwirlCraft
         BasePressureSolver(Grid<T, Dims> grid, int32_t maxIterations) : maxIterations(maxIterations), grid(grid) {}
 
         public:
-        void solve(T* p, const T* div, const T* collision, const int32_t maxIterations)
+        void solve(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
-            static_cast<Derived<T, Dims>*>(this)->_solve_impl(p, div, collision, maxIterations);
+            static_cast<Derived<T, Dims>*>(this)->_solve_impl(f, g, collision, maxIterations);
         }
-        void solve(T* p, const T* div, const T* collision)
+        void solve(T* f, const T* g, const T* collision)
         {
-            solve(p, div, collision, maxIterations);
+            solve(f, g, collision, maxIterations);
         }
     };
 }

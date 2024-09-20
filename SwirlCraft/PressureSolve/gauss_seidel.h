@@ -4,7 +4,7 @@
 namespace SwirlCraft
 {
     template <typename T, uint32_t Dims>
-    void gaussSeidelSolve(T* p, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    void gaussSeidelSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T dxn2[Dims];
         T c[Dims];
@@ -34,11 +34,11 @@ namespace SwirlCraft
                     for (uint32_t k = 0; k < Dims; k++)
                     {
                         const auto stride = grid.stride[k];
-                        const T b1 = collision[i-stride] > 0 ? p[i-stride] : p[i];
-                        const T b2 = collision[i+stride] > 0 ? p[i+stride] : p[i]; 
+                        const T b1 = collision[i-stride] > 0 ? f[i-stride] : f[i];
+                        const T b2 = collision[i+stride] > 0 ? f[i+stride] : f[i]; 
                         A += c[k] * (b1 + b2);
                     }
-                    p[i] = A - c0 * div[i];
+                    f[i] = A - c0 * g[i];
                 }
             }
         }

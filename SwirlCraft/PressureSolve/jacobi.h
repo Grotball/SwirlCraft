@@ -6,9 +6,9 @@ namespace SwirlCraft
 {
     template <typename T>
     inline void jacobiIteration(
-        T* p, 
-        T* p_old, 
-        const T* div, 
+        T* f, 
+        T* f_old, 
+        const T* g, 
         const T* collision, 
         const T c0, 
         const T* c, 
@@ -27,7 +27,7 @@ namespace SwirlCraft
             #endif
             for (size_t i = 0; i < N; i++)
             {
-                p_old[i] = p[i];
+                f_old[i] = f[i];
             }
 
             #ifdef _OPENMP
@@ -41,11 +41,11 @@ namespace SwirlCraft
                     for (size_t j = 0; j < dims; j++)
                     {
                         const auto stride = strides[j];
-                        const T b1 = collision[i-stride] > 0 ? p_old[i-stride] : p_old[i];
-                        const T b2 = collision[i+stride] > 0 ? p_old[i+stride] : p_old[i]; 
+                        const T b1 = collision[i-stride] > 0 ? f_old[i-stride] : f_old[i];
+                        const T b2 = collision[i+stride] > 0 ? f_old[i+stride] : f_old[i]; 
                         A += c[j] * (b1 + b2);
                     }
-                    p[i] = A - c0 * div[i];
+                    f[i] = A - c0 * g[i];
                 }
             }
         #ifdef _OPENMP
@@ -56,9 +56,9 @@ namespace SwirlCraft
     #ifdef SWIRL_CRAFT_USE_SIMD
     template <>
     inline void jacobiIteration<float>(
-        float* p, 
-        float* p_old, 
-        const float* div, 
+        float* f, 
+        float* f_old, 
+        const float* g, 
         const float* collision, 
         const float c0, 
         const float* c, 
@@ -83,7 +83,7 @@ namespace SwirlCraft
             #endif
             for (size_t i = 0; i < N; i++)
             {
-                p_old[i] = p[i];
+                f_old[i] = f[i];
             }
 
             #ifdef _OPENMP
@@ -97,11 +97,11 @@ namespace SwirlCraft
                     for (uint32_t k = 0; k < dims; k++)
                     {
                         const auto stride = strides[k];
-                        const auto b1 = collision[i-stride] > 0 ? p_old[i-stride] : p_old[i];
-                        const auto b2 = collision[i+stride] > 0 ? p_old[i+stride] : p_old[i];
+                        const auto b1 = collision[i-stride] > 0 ? f_old[i-stride] : f_old[i];
+                        const auto b2 = collision[i+stride] > 0 ? f_old[i+stride] : f_old[i];
                         A += c[k] * (b1 + b2);
                     }
-                    p[i] = A - c0 * div[i];
+                    f[i] = A - c0 * g[i];
                 }
             }
 
@@ -112,20 +112,20 @@ namespace SwirlCraft
             {
                 #if __AVX__
                 __m256 A = _mm256_setzero_ps();
-                const __m256 p0 = _mm256_loadu_ps(p_old + i);
+                const __m256 f0 = _mm256_loadu_ps(f_old + i);
 
                 for (uint32_t j = 0; j < dims; j++)
                 {
                     const auto stride = strides[j];
                     const auto cj = _mm256_set1_ps(c[j]);
                     const auto b1 = _mm256_blendv_ps(
-                        _mm256_loadu_ps(p_old + i - stride),
-                        p0,
+                        _mm256_loadu_ps(f_old + i - stride),
+                        f0,
                         _mm256_loadu_ps(collision + i - stride)
                     );
                     const auto b2 = _mm256_blendv_ps(
-                        _mm256_loadu_ps(p_old + i + stride), 
-                        p0, 
+                        _mm256_loadu_ps(f_old + i + stride), 
+                        f0, 
                         _mm256_loadu_ps(collision + i + stride)
                     );
 
@@ -133,29 +133,29 @@ namespace SwirlCraft
                 }
 
                 _mm256_storeu_ps(
-                    p + i,
+                    f + i,
                     _mm256_fnmadd_ps(
                         c0_v, 
-                        _mm256_loadu_ps(div + i),
+                        _mm256_loadu_ps(g + i),
                         A
                     )
                 );
                 #elif __SSE4_1__
                 __m128 A = _mm_setzero_ps();
-                const __m128 p0 = _mm_loadu_ps(p_old + i);
+                const __m128 f0 = _mm_loadu_ps(f_old + i);
 
                 for (uint32_t j = 0; j < dims; j++)
                 {
                     const auto stride = strides[j];
                     const auto cj = _mm_set1_ps(c[j]);
                     const auto b1 = _mm_blendv_ps(
-                        _mm_loadu_ps(p_old + i - stride),
-                        p0,
+                        _mm_loadu_ps(f_old + i - stride),
+                        f0,
                         _mm_loadu_ps(collision + i - stride)
                     );
                     const auto b2 = _mm_blendv_ps(
-                        _mm_loadu_ps(p_old + i + stride), 
-                        p0, 
+                        _mm_loadu_ps(f_old + i + stride), 
+                        f0, 
                         _mm_loadu_ps(collision + i + stride)
                     );
 
@@ -163,10 +163,10 @@ namespace SwirlCraft
                 }
 
                 _mm_storeu_ps(
-                    p + i,
+                    f + i,
                     _mm_fnmadd_ps(
                         c0_v, 
-                        _mm_loadu_ps(div + i),
+                        _mm_loadu_ps(g + i),
                         A
                     )
                 );
@@ -179,9 +179,9 @@ namespace SwirlCraft
 
     template <>
     inline void jacobiIteration<double>(
-        double* p, 
-        double* p_old, 
-        const double* div, 
+        double* f, 
+        double* f_old, 
+        const double* g, 
         const double* collision, 
         const double c0, 
         const double* c, 
@@ -207,7 +207,7 @@ namespace SwirlCraft
             #endif
             for (size_t i = 0; i < N; i++)
             {
-                p_old[i] = p[i];
+                f_old[i] = f[i];
             }
 
             #ifdef _OPENMP
@@ -221,11 +221,11 @@ namespace SwirlCraft
                     for (uint32_t k = 0; k < dims; k++)
                     {
                         const auto stride = strides[k];
-                        const auto b1 = collision[i-stride] > 0 ? p_old[i-stride] : p_old[i];
-                        const auto b2 = collision[i+stride] > 0 ? p_old[i+stride] : p_old[i];
+                        const auto b1 = collision[i-stride] > 0 ? f_old[i-stride] : f_old[i];
+                        const auto b2 = collision[i+stride] > 0 ? f_old[i+stride] : f_old[i];
                         A += c[k] * (b1 + b2);
                     }
-                    p[i] = A - c0 * div[i];
+                    f[i] = A - c0 * g[i];
                 }
             }
 
@@ -236,20 +236,20 @@ namespace SwirlCraft
             {
                 #if __AVX__
                 __m256d A = _mm256_setzero_pd();
-                const __m256d p0 = _mm256_loadu_pd(p_old + i);
+                const __m256d f0 = _mm256_loadu_pd(f_old + i);
 
                 for (uint32_t j = 0; j < dims; j++)
                 {
                     const auto stride = strides[j];
                     const auto cj = _mm256_set1_pd(c[j]);
                     const auto b1 = _mm256_blendv_pd(
-                        _mm256_loadu_pd(p_old + i - stride),
-                        p0,
+                        _mm256_loadu_pd(f_old + i - stride),
+                        f0,
                         _mm256_loadu_pd(collision + i - stride)
                     );
                     const auto b2 = _mm256_blendv_pd(
-                        _mm256_loadu_pd(p_old + i + stride), 
-                        p0, 
+                        _mm256_loadu_pd(f_old + i + stride), 
+                        f0, 
                         _mm256_loadu_pd(collision + i + stride)
                     );
 
@@ -257,10 +257,10 @@ namespace SwirlCraft
                 }
 
                 _mm256_storeu_pd(
-                    p + i,
+                    f + i,
                     _mm256_fnmadd_pd(
                         c0_v, 
-                        _mm256_loadu_pd(div + i),
+                        _mm256_loadu_pd(g + i),
                         A
                     )
                 );
@@ -268,20 +268,20 @@ namespace SwirlCraft
                 #elif __SSE4_1__
 
                 __m128d A = _mm_setzero_pd();
-                const __m128d p0 = _mm_loadu_pd(p_old + i);
+                const __m128d f0 = _mm_loadu_pd(f_old + i);
 
                 for (uint32_t j = 0; j < dims; j++)
                 {
                     const auto stride = strides[j];
                     const auto cj = _mm_set1_pd(c[j]);
                     const auto b1 = _mm_blendv_pd(
-                        _mm_loadu_pd(p_old + i - stride),
-                        p0,
+                        _mm_loadu_pd(f_old + i - stride),
+                        f0,
                         _mm_loadu_pd(collision + i - stride)
                     );
                     const auto b2 = _mm_blendv_pd(
-                        _mm_loadu_pd(p_old + i + stride), 
-                        p0, 
+                        _mm_loadu_pd(f_old + i + stride), 
+                        f0, 
                         _mm_loadu_pd(collision + i + stride)
                     );
 
@@ -289,10 +289,10 @@ namespace SwirlCraft
                 }
 
                 _mm_storeu_pd(
-                    p + i,
+                    f + i,
                     _mm_fnmadd_pd(
                         c0_v, 
-                        _mm_loadu_pd(div + i),
+                        _mm_loadu_pd(g + i),
                         A
                     )
                 );
@@ -305,7 +305,7 @@ namespace SwirlCraft
     #endif
 
     template <typename T, uint32_t Dims>
-    void jacobiSolve(T* p, T* p_old, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    void jacobiSolve(T* f, T* f_old, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T dxn2[Dims];
         T c[Dims];
@@ -326,17 +326,17 @@ namespace SwirlCraft
 
         for (int32_t iter = 0; iter < maxIterations; iter++)
         {
-            jacobiIteration(p, p_old, div, collision, c0, c, grid.stride, Dims, N);
+            jacobiIteration(f, f_old, g, collision, c0, c, grid.stride, Dims, N);
         }
     }    
 
     template <typename T, uint32_t Dims>
-    void jacobiSolve(T* p, const T* div, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    void jacobiSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
-        T* p_old = new T[grid.N];
+        T* f_old = new T[grid.N];
 
-        jacobiSolve(p, p_old, div, collision, grid, maxIterations);
+        jacobiSolve(f, f_old, g, collision, grid, maxIterations);
 
-        delete[] p_old;
+        delete[] f_old;
     }
 }

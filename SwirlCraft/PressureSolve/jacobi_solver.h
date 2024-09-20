@@ -7,19 +7,19 @@ namespace SwirlCraft
     template <typename T, uint32_t Dims>
     class JacobiSolver : public BasePressureSolver<JacobiSolver, T, Dims>
     {
-        T* p_old;
+        T* f_old;
         public:
         JacobiSolver(Grid<T, Dims> grid, int32_t maxIterations) : BasePressureSolver<JacobiSolver, T, Dims>(grid, maxIterations) 
         {
-            p_old = new T[this->grid.N];
+            f_old = new T[this->grid.N];
         }
-        void _solve_impl(T* p, const T* div, const T* collision, const int32_t maxIterations)
+        void _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
-            jacobiSolve(p, p_old, div, collision, this->grid, maxIterations);
+            jacobiSolve(f, f_old, g, collision, this->grid, maxIterations);
         }
         ~JacobiSolver()
         {
-            delete[] p_old;
+            delete[] f_old;
         }
     };
 }
