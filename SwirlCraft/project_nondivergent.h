@@ -6,7 +6,7 @@ namespace SwirlCraft
 {
     // Removes divergence from velocity field.
     template <typename T, uint32_t Dims, typename PressureSolver>
-    void projectNonDivergent(
+    PressureSolveInfo projectNonDivergent(
         T* (&vel)[Dims], 
         T* p, 
         T* div, 
@@ -36,7 +36,7 @@ namespace SwirlCraft
             }
         }
 
-        pressureSolver.solve(p, div, collision);
+        PressureSolveInfo psolveInfo = pressureSolver.solve(p, div, collision);
 
         // Subtract pressure gradient from velocity to remove divergence.
         for (uint32_t i = 0; i < Dims; i++)
@@ -56,5 +56,6 @@ namespace SwirlCraft
                 }
             }
         }
+        return psolveInfo;
     }
 }
