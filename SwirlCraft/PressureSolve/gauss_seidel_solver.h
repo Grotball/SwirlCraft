@@ -10,9 +10,9 @@ namespace SwirlCraft
         using BasePressureSolver<GaussSeidelSolver, T, Dims>::grid;
         public:
         GaussSeidelSolver(Grid<T, Dims> grid, int32_t maxIterations) : BasePressureSolver<GaussSeidelSolver, T, Dims>(grid, maxIterations) {}
-        void _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
+        PressureSolveInfo _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
-            gaussSeidelSolve(f, g, collision, grid, maxIterations);
+            return gaussSeidelSolve(f, g, collision, grid, maxIterations);
         }
     };
 }

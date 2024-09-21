@@ -38,16 +38,13 @@ namespace SwirlCraft
                 z = nullptr;
             }
         }
-        void _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
+        PressureSolveInfo _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
             if (use_preconditioner)
             {
-                preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
+                return preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
             }
-            else
-            {
-                conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
-            }
+            return conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
         }
         ~ConjugateGradientSolver()
         {

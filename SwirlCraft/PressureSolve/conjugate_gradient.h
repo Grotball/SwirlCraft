@@ -1,13 +1,14 @@
 #pragma once
-#include "../grid.h"
 #include <cmath>
+#include "../grid.h"
 #include "../arch.h"
+#include "pressure_solve_info.h"
 
 namespace SwirlCraft
 {
     
     template <typename T, uint32_t Dims>
-    void conjugateGradientSolve(T* p, T* r, T* v, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    PressureSolveInfo conjugateGradientSolve(T* p, T* r, T* v, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         T dxn2[Dims];
         for (uint32_t i = 0; i < Dims; i++)
@@ -16,7 +17,7 @@ namespace SwirlCraft
             dxn2[i] = 1 / (dx*dx);
         }
 
-        
+        auto t1 = std::chrono::steady_clock::now();
 
         T res2_sum = 0;
         T g2_sum = 0;
@@ -110,20 +111,24 @@ namespace SwirlCraft
             iter++;
         }
 
+        auto t2 = std::chrono::steady_clock::now();
+
+        return PressureSolveInfo{iter, t2-t1, std::sqrt(res2_sum)};
     }
 
     template <typename T, uint32_t Dims>
-    void conjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    PressureSolveInfo conjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         T* r = new T[grid.N];
         T* p = new T[grid.N];
         T* v = new T[grid.N];
         
-        conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
+        auto psolveInfo = conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
 
         delete[] r;
         delete[] p;
         delete[] v;
+        return psolveInfo;
     }
 
 
@@ -181,7 +186,7 @@ namespace SwirlCraft
 
 
     template <typename T, uint32_t Dims>
-    void preconditionedConjugateGradientSolve(T* L_diag, T* p, T* r, T* v, T* w, T* z, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    PressureSolveInfo preconditionedConjugateGradientSolve(T* L_diag, T* p, T* r, T* v, T* w, T* z, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         
         T dxn2[Dims];
@@ -193,7 +198,7 @@ namespace SwirlCraft
             c0 += 2 * dxn2[i];
         }
 
-
+        auto t1 = std::chrono::steady_clock::now();
 
         for (size_t i = 0; i < grid.N; i++) {r[i] = 0;}
 
@@ -337,11 +342,13 @@ namespace SwirlCraft
             iter++;
         }
 
+        auto t2 = std::chrono::steady_clock::now();
 
+        return {iter, t2-t1, std::sqrt(res_sum)};
     }
 
     template <typename T, uint32_t Dims>
-    void preconditionedConjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    PressureSolveInfo preconditionedConjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         T* L_diag = new T[grid.N];
         T* r = new T[grid.N];
@@ -350,7 +357,7 @@ namespace SwirlCraft
         T* w = new T[grid.N];
         T* z = new T[grid.N];
 
-        preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
+        auto psolveInfo = preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
 
         delete[] L_diag;
         delete[] r;
@@ -358,5 +365,7 @@ namespace SwirlCraft
         delete[] v;
         delete[] w;
         delete[] z;
+
+        return psolveInfo;
     }
 }

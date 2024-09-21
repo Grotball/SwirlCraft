@@ -1,10 +1,11 @@
 #pragma once
 #include "../grid.h"
+#include "pressure_solve_info.h"
 
 namespace SwirlCraft
 {
     template <typename T, uint32_t Dims>
-    void gaussSeidelSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    PressureSolveInfo gaussSeidelSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T dxn2[Dims];
         T c[Dims];
@@ -23,6 +24,7 @@ namespace SwirlCraft
             c[i] = c0 * dxn2[i];
         }
 
+        auto t1 = std::chrono::steady_clock::now();
 
         for (int32_t iter = 0; iter < maxIterations; iter++)
         {
@@ -42,5 +44,8 @@ namespace SwirlCraft
                 }
             }
         }
+
+        auto t2 = std::chrono::steady_clock::now();
+        return {maxIterations, t2 - t1, pressureSolveResidualNorm(f, g, collision, grid)};
     }
 }

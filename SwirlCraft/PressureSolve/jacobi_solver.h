@@ -13,9 +13,9 @@ namespace SwirlCraft
         {
             f_old = new T[this->grid.N];
         }
-        void _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
+        PressureSolveInfo _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
-            jacobiSolve(f, f_old, g, collision, this->grid, maxIterations);
+            return jacobiSolve(f, f_old, g, collision, this->grid, maxIterations);
         }
         ~JacobiSolver()
         {

@@ -1,6 +1,7 @@
 #pragma once
 #include "../grid.h"
 #include "../arch.h"
+#include "pressure_solve_info.h"
 
 namespace SwirlCraft
 {
@@ -305,7 +306,7 @@ namespace SwirlCraft
     #endif
 
     template <typename T, uint32_t Dims>
-    void jacobiSolve(T* f, T* f_old, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    PressureSolveInfo jacobiSolve(T* f, T* f_old, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T dxn2[Dims];
         T c[Dims];
@@ -324,19 +325,26 @@ namespace SwirlCraft
             c[i] = c0 * dxn2[i];
         }
 
+        auto t1 = std::chrono::steady_clock::now();
+
         for (int32_t iter = 0; iter < maxIterations; iter++)
         {
             jacobiIteration(f, f_old, g, collision, c0, c, grid.stride, Dims, N);
         }
+
+        auto t2 = std::chrono::steady_clock::now();
+
+        return {maxIterations, t2 - t1, pressureSolveResidualNorm(f, g, collision, grid)};
     }    
 
     template <typename T, uint32_t Dims>
-    void jacobiSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
+    PressureSolveInfo jacobiSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations)
     {
         T* f_old = new T[grid.N];
 
-        jacobiSolve(f, f_old, g, collision, grid, maxIterations);
+        PressureSolveInfo psolveInfo = jacobiSolve(f, f_old, g, collision, grid, maxIterations);
 
         delete[] f_old;
+        return psolveInfo;
     }
 }

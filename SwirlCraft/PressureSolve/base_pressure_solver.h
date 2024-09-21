@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "pressure_solve_info.h"
 #include "../grid.h"
 
 namespace SwirlCraft
@@ -13,13 +14,13 @@ namespace SwirlCraft
         BasePressureSolver(Grid<T, Dims> grid, int32_t maxIterations) : maxIterations(maxIterations), grid(grid) {}
 
         public:
-        void solve(T* f, const T* g, const T* collision, const int32_t maxIterations)
+        PressureSolveInfo solve(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
-            static_cast<Derived<T, Dims>*>(this)->_solve_impl(f, g, collision, maxIterations);
+            return static_cast<Derived<T, Dims>*>(this)->_solve_impl(f, g, collision, maxIterations);
         }
-        void solve(T* f, const T* g, const T* collision)
+        PressureSolveInfo solve(T* f, const T* g, const T* collision)
         {
-            solve(f, g, collision, maxIterations);
+            return solve(f, g, collision, maxIterations);
         }
     };
 }
