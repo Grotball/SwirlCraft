@@ -40,6 +40,10 @@ namespace SwirlCraft
         }
         PressureSolveInfo _solve_impl(T* f, const T* g, const T* collision, const int32_t maxIterations)
         {
+            for (size_t i = 0; i < grid.N; i++)
+            {
+                f[i] = 0;
+            }
             if (use_preconditioner)
             {
                 return preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
