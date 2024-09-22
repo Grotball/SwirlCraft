@@ -19,7 +19,9 @@ namespace SwirlCraft
         T* w;
         T* z;
         public:
-        ConjugateGradientSolver(Grid<T, Dims> grid, int32_t maxIterations, T epsilon=0, bool use_preconditioner=false) : BasePressureSolver<ConjugateGradientSolver, T, Dims>(grid, maxIterations), epsilon(epsilon), use_preconditioner(use_preconditioner)
+        ConjugateGradientSolver(Grid<T, Dims> grid, int32_t maxIterations, T epsilon=0, bool use_preconditioner=false) : 
+            BasePressureSolver<ConjugateGradientSolver, T, Dims>(grid, maxIterations), 
+            epsilon(epsilon), use_preconditioner(use_preconditioner)
         {
             p = new  T[grid.N];
             r = new  T[grid.N];
