@@ -9,6 +9,11 @@ include(GNUInstallDirs)
 
 add_library(swirl_craft INTERFACE)
 
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+	target_link_libraries(swirl_craft INTERFACE OpenMP::OpenMP_CXX)
+endif()
+
 target_include_directories(swirl_craft INTERFACE 
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
