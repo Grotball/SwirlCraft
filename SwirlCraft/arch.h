@@ -12,6 +12,11 @@
 #define SWIRL_CRAFT_USE_SIMD
 #endif
 
+#ifdef SWIRL_CRAFT_GPU_ENABLED
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
 
 
 namespace SwirlCraft

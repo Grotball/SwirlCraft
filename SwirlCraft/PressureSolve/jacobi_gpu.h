@@ -1,7 +1,6 @@
 #pragma once
 #include "../grid.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include "../arch.h"
 #include "pressure_solve_info.h"
 
 namespace SwirlCraft
