@@ -1,7 +1,7 @@
 
 #include <cstdint>
-#include "../../SwirlCraft/grid.h"
-#include "../../SwirlCraft/PressureSolve/jacobi_gpu.h"
+#include <SwirlCraft/grid.h>
+#include <SwirlCraft/PressureSolve/jacobi_gpu.h>
 
 namespace SwirlCraft
 {
