@@ -134,9 +134,9 @@ namespace SwirlCraft
 
     // Apply incomplete Cholesky preconditioner.
     template <typename T, uint32_t Dims>
-    void applyPreconditioner(T* z, T* w, const T* r, const T* L_diag, const T* collision, const T(&dxn2)[Dims], const Grid<T, Dims>& grid)
+    void applyPreconditioner(T* z, T* w, const T* r, const T* L_diag_rcp, const T* collision, const T(&dxn2)[Dims], const Grid<T, Dims>& grid)
     {
-        w[0] = collision[0] > 0 ? r[0] / L_diag[0] : 0;
+        w[0] = collision[0] > 0 ? r[0] * L_diag_rcp[0] : 0;
 
         const int64_t N = static_cast<int64_t>(grid.N);
         for (int64_t i = 0; i < N; i++)
@@ -149,10 +149,10 @@ namespace SwirlCraft
                     const auto stride = grid.stride[j];
                     if (i >= stride && collision[i - stride] > 0)
                     {
-                        w[i] -= -dxn2[j] * w[i - stride] / L_diag[i - stride];
+                        w[i] -= -dxn2[j] * w[i - stride] * L_diag_rcp[i - stride];
                     }
                 }
-                w[i] = w[i] / L_diag[i];
+                w[i] = w[i] * L_diag_rcp[i];
             }
             else
             {
@@ -172,10 +172,10 @@ namespace SwirlCraft
                     const auto stride = grid.stride[j];
                     if ((i + stride) < grid.N && collision[i + stride] > 0)
                     {
-                        z[i] -= -dxn2[j] * z[i + stride] / L_diag[i];
+                        z[i] -= -dxn2[j] * z[i + stride] * L_diag_rcp[i];
                     }
                 }
-                z[i] = z[i] / L_diag[i];
+                z[i] = z[i] * L_diag_rcp[i];
             }
             else
             {
@@ -186,7 +186,7 @@ namespace SwirlCraft
 
 
     template <typename T, uint32_t Dims>
-    PressureSolveInfo preconditionedConjugateGradientSolve(T* L_diag, T* p, T* r, T* v, T* w, T* z, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
+    PressureSolveInfo preconditionedConjugateGradientSolve(T* L_diag_rcp, T* p, T* r, T* v, T* w, T* z, T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
         
         T dxn2[Dims];
@@ -202,7 +202,7 @@ namespace SwirlCraft
 
         for (size_t i = 0; i < grid.N; i++) {r[i] = 0;}
 
-        L_diag[0] = collision[0] <= 0 ? 0 : std::sqrt(c0);
+        L_diag_rcp[0] = collision[0] <= 0 ? 0 : 1 / std::sqrt(c0);
         const int64_t N = static_cast<int64_t>(grid.N);
         for (int64_t i = 0; i < N; i++)
         {
@@ -215,7 +215,7 @@ namespace SwirlCraft
                     auto stride = grid.stride[j];
                     if (0 <= (i - stride) && collision[i - stride] > 0)
                     {
-                        auto a = -dxn2[j] / L_diag[i - stride];
+                        auto a = -dxn2[j] * L_diag_rcp[i - stride];
                         q += a*a;
                     }
                     else
@@ -223,11 +223,11 @@ namespace SwirlCraft
                         A += -dxn2[j];
                     }
                 }
-                L_diag[i] = std::sqrt(A - q);
+                L_diag_rcp[i] = 1 / std::sqrt(A - q);
             }
             else
             {
-                L_diag[i] = 0;
+                L_diag_rcp[i] = 0;
             }
         }
 
@@ -247,7 +247,7 @@ namespace SwirlCraft
             }
         }
 
-        applyPreconditioner(z, w, r, L_diag, collision, dxn2, grid);
+        applyPreconditioner(z, w, r, L_diag_rcp, collision, dxn2, grid);
 
         for (size_t i = 0; i < grid.N; i++)
         {
@@ -316,7 +316,7 @@ namespace SwirlCraft
                 #pragma omp single
                 #endif
                 {
-                    applyPreconditioner(z, w, r, L_diag, collision, dxn2, grid);
+                    applyPreconditioner(z, w, r, L_diag_rcp, collision, dxn2, grid);
                 }
 
                 #ifdef _OPENMP
@@ -350,16 +350,16 @@ namespace SwirlCraft
     template <typename T, uint32_t Dims>
     PressureSolveInfo preconditionedConjugateGradientSolve(T* f, const T* g, const T* collision, const Grid<T, Dims>& grid, const int32_t maxIterations, const T epsilon)
     {
-        T* L_diag = new T[grid.N];
+        T* L_diag_rcp = new T[grid.N];
         T* r = new T[grid.N];
         T* p = new T[grid.N];
         T* v = new T[grid.N];
         T* w = new T[grid.N];
         T* z = new T[grid.N];
 
-        auto psolveInfo = preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
+        auto psolveInfo = preconditionedConjugateGradientSolve(L_diag_rcp, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
 
-        delete[] L_diag;
+        delete[] L_diag_rcp;
         delete[] r;
         delete[] p;
         delete[] v;

@@ -14,8 +14,8 @@ namespace SwirlCraft
         T* p;
         T* r;
         T* v;
-        // L_diag, w, z used for preconditioned solve
-        T* L_diag;
+        // L_diag_rcp, w, z used for preconditioned solve
+        T* L_diag_rcp;
         T* w;
         T* z;
         public:
@@ -29,13 +29,13 @@ namespace SwirlCraft
             
             if (use_preconditioner)
             {
-                L_diag = new T[grid.N];
+                L_diag_rcp = new T[grid.N];
                 w = new T[grid.N];
                 z = new T[grid.N];
             }
             else
             {
-                L_diag = nullptr;
+                L_diag_rcp = nullptr;
                 w = nullptr;
                 z = nullptr;
             }
@@ -48,7 +48,7 @@ namespace SwirlCraft
             }
             if (use_preconditioner)
             {
-                return preconditionedConjugateGradientSolve(L_diag, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
+                return preconditionedConjugateGradientSolve(L_diag_rcp, p, r, v, w, z, f, g, collision, grid, maxIterations, epsilon);
             }
             return conjugateGradientSolve(p, r, v, f, g, collision, grid, maxIterations, epsilon);
         }
@@ -60,7 +60,7 @@ namespace SwirlCraft
 
             if (use_preconditioner)
             {
-                delete[] L_diag;
+                delete[] L_diag_rcp;
                 delete[] w;
                 delete[] z;
             }
