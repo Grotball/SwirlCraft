@@ -36,6 +36,7 @@ if(${ENABLE_GPU_SUCCESS})
 	target_compile_options(swirl_craft_gpu PRIVATE "-DSWIRL_CRAFT_GPU_ENABLED=1")
 	target_compile_options(swirl_craft INTERFACE "-DSWIRL_CRAFT_GPU_ENABLED=1")
 	target_link_libraries(swirl_craft INTERFACE swirl_craft_gpu)
+	target_link_libraries(swirl_craft INTERFACE CUDA::cudart)
 endif()
 
 target_include_directories(swirl_craft INTERFACE 
