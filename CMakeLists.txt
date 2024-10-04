@@ -1,6 +1,3 @@
-# NOTE: CMake support is currently a work in progress.
-# At the moment it is recommended to just follow the
-# instructions in the README.
 cmake_minimum_required(VERSION 3.18)
 
 project(SwirlCraft LANGUAGES CXX)
@@ -18,6 +15,7 @@ if(${SWIRL_CRAFT_ENABLE_GPU})
 	check_language(CUDA)	
 	if(CMAKE_CUDA_COMPILER)
 		enable_language(CUDA)
+		find_package(CUDAToolkit REQUIRED)
 		set(ENABLE_GPU_SUCCESS 1)
 	else()
 		message("Failed to find CUDA compiler. GPU will not be used.")
